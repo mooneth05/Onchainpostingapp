@@ -1,101 +1,47 @@
 <!DOCTYPE html><html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Onchain Daily Posting</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-<style>
-body{font-family:'Poppins',sans-serif;background:#0a0a0a;color:#fff;margin:0}
-header{padding:20px;text-align:center;background:#111;font-size:20px}
-nav{display:flex;justify-content:space-around;background:#111;padding:10px}
-nav button{background:none;border:none;color:#fff;font-size:14px}
-section{display:none;padding:20px}
-.active{display:block}
-.card{background:#1a1a1a;padding:15px;border-radius:12px;margin-bottom:10px}
-button.main{background:#4cafef;border:none;padding:10px 15px;border-radius:8px;color:#fff}
-input,textarea{width:100%;padding:10px;margin-top:10px;border-radius:8px;border:none}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Onchain Posting App - Simple</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-<header>🚀 Onchain Daily Posting</header>
-<nav>
-<button onclick="show('home')">Home</button>
-<button onclick="show('post')">Post</button>
-<button onclick="show('leaderboard')">Leaderboard</button>
-<button onclick="show('about')">About</button>
-<button onclick="connectWallet()">Wallet</button>
-</nav><section id="home" class="active">
-<h2>Feed</h2>
-<div id="feed"></div>
-</section><section id="post">
-<h2>Create Post</h2>
-<textarea id="content" placeholder="Write something..."></textarea>
-<button class="main" onclick="addPost()">Post</button>
-</section><section id="leaderboard">
-<h2>Leaderboard</h2>
-<div id="leader"></div>
-</section><section id="about">
-<h2>About</h2>
-<p>Web3 Social Posting Platform</p>
-<h3>Roadmap</h3>
-<ul>
-<li>Phase 1: Launch</li>
-<li>Phase 2: Token</li>
-<li>Phase 3: NFT</li>
-</ul>
-<p>Twitter: @onchainproject</p>
-</section><script>
-let posts = JSON.parse(localStorage.getItem('posts')||'[]');
-let wallet = null;
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">  <div class="w-full max-w-md p-6 bg-gray-800 rounded-2xl shadow-xl">
+    <h1 class="text-2xl font-bold mb-4 text-center">🚀 Onchain Post</h1><button onclick="connectWallet()" class="w-full bg-blue-500 p-2 rounded-xl mb-4">Connect Wallet</button>
 
-function show(id){
- document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
- document.getElementById(id).classList.add('active');
-}
+<textarea id="postInput" placeholder="Write something..." class="w-full p-2 rounded-xl text-black mb-3"></textarea>
 
-function render(){
- let feed = document.getElementById('feed');
- feed.innerHTML = '';
- posts.reverse().forEach(p=>{
-  feed.innerHTML += `<div class="card"><b>${p.user}</b><p>${p.text}</p></div>`;
- });
+<button onclick="addPost()" class="w-full bg-green-500 p-2 rounded-xl">Post</button>
 
- let leader = {};
- posts.forEach(p=>{
-  leader[p.user]=(leader[p.user]||0)+1;
- });
+<div id="feed" class="mt-4 space-y-2"></div>
 
- let ldiv = document.getElementById('leader');
- ldiv.innerHTML='';
- Object.keys(leader).sort((a,b)=>leader[b]-leader[a]).forEach(u=>{
-  ldiv.innerHTML += `<div class="card">${u}: ${leader[u]} posts</div>`;
- });
-}
+  </div>  <script>
+    let account = null;
 
-function addPost(){
- let text = document.getElementById('content').value;
- if(!text) return alert('Empty');
- let user = wallet || 'Guest';
- posts.push({user,text});
- localStorage.setItem('posts',JSON.stringify(posts));
- document.getElementById('content').value='';
- render();
- show('home');
-}
+    async function connectWallet() {
+      if (window.ethereum) {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        account = accounts[0];
+        alert("Connected: " + account);
+      } else {
+        alert("Install MetaMask!");
+      }
+    }
 
-async function connectWallet(){
- if(window.ethereum){
-  const provider = new ethers.providers.Web3Provider(window.ethereum);
-  await provider.send("eth_requestAccounts", []);
-  const signer = provider.getSigner();
-  wallet = await signer.getAddress();
-  alert('Connected: '+wallet);
- }else{
-  alert('Install MetaMask');
- }
-}
+    function addPost() {
+      const input = document.getElementById("postInput");
+      const feed = document.getElementById("feed");
 
-render();
-</script></body>
+      if (!input.value) return;
+
+      const post = document.createElement("div");
+      post.className = "bg-gray-700 p-3 rounded-xl";
+      post.innerHTML = `
+        <p>${input.value}</p>
+        <small class="text-gray-400">${account ? account : "Anonymous"}</small>
+      `;
+
+      feed.prepend(post);
+      input.value = "";
+    }
+  </script></body>
 </html>
